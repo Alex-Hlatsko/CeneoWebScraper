@@ -1,0 +1,37 @@
+.navbar .menu a{
+    transition: 0.2s;
+    color: white;
+}
+.navbar .menu a:hover{
+    color: aqua;
+}
+.title__blue{
+    color: aqua;
+}
+.content p{
+    width: 60%;
+}
+.title{
+    font-size: 64px;
+    font-weight: 400;
+}
+.sub__title{
+    letter-spacing: 1.5px;
+}
+footer{
+    width: 100%;
+    background-color: #212529;
+    color: white;
+}
+footer p{
+    margin-bottom: 0;
+}
+a.btn{
+    background-color: aqua;
+    font-size: 18px;
+}
+a.btn:hover{
+    background-color: white;
+    border: 1px solid aqua;
+    color: aqua;
+}
