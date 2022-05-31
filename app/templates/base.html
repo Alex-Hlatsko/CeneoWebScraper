@@ -14,13 +14,13 @@
             <nav class="navbar navbar-dark bg-dark py-4">
                 <div class="container nav__conatiner d-flex justify-content-between">
                     <div class="logo">
-                        <a class="text-decoration-none fs-2 text-white" href="/">WebScraper</a>
+                        <a class="text-decoration-none fs-2 text-white" href="{{url_for('index')}}">WebScraper</a>
                     </div>
                     <div class="menu d-flex">
-                        <a class="mx-3 px-1 text-decoration-none fs-5" href="/">Home</a>
-                        <a class="mx-3 px-1 text-decoration-none fs-5" href="/extraction">Extraction</a>
-                        <a class="mx-3 px-1 text-decoration-none fs-5" href="/about">About</a>
-                        <a class="mx-3 px-1 text-decoration-none fs-5" href="/products">Products</a>
+                        <a class="mx-3 px-1 text-decoration-none fs-5" href="{{url_for('index')}}">Home</a>
+                        <a class="mx-3 px-1 text-decoration-none fs-5" href="{{url_for('extract', product_id=39562616)}}">Extraction</a>
+                        <a class="mx-3 px-1 text-decoration-none fs-5" href="{{url_for('about')}}">About</a>
+                        <a class="mx-3 px-1 text-decoration-none fs-5" href="{{url_for('products')}}">Products</a>
                     </div>
                 </div>    
             </nav>
