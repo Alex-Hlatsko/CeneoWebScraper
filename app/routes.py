@@ -1,3 +1,5 @@
+from genericpath import exists
+from math import prod
 from bs4 import BeautifulSoup
 import requests
 import json
@@ -9,7 +11,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 from app import app
-from flask import redirect, render_template
+from flask import redirect, render_template, url_for, request
 
 
 
@@ -37,33 +39,37 @@ selectors = {
 }
 
 @app.route('/')
-@app.route('/index')
-@app.route('/index/<name>')
-def index(name="Hello World"):
-    return render_template("index.html", text=name)
+def index():
+    return render_template("index.html")
 
-@app.route('/extract/<product_id>')
-def extract(product_id):
-    url = f"https://www.ceneo.pl/{product_id}#tab=reviews"
-    all_opinions = []
-    while(url):
-        response = requests.get(url)
-        page = BeautifulSoup(response.text, 'html.parser')
-        opinions = page.select("div.js_product-review")
-        for opinion in opinions:
-            single_opinion = {
-                key:get_item(opinion, *value)
-                    for key, value in selectors.items()
-            }
-            single_opinion["opinion_id"] = opinion["data-entry-id"]
-            all_opinions.append(single_opinion)
-        try:    
-            url = "https://www.ceneo.pl"+get_item(page,"a.pagination__next","href")
-        except TypeError:
-            url = None
-        with open(f"app/opinions/{product_id}.json", "w", encoding="UTF-8") as jf:
-            json.dump(all_opinions, jf, indent=4, ensure_ascii=False)
+@app.route('/extract', methods=["POST","GET"])
+def extract():
+    if request.method == "POST":
+        product_id = request.form.get("product_id")
+        url = f"https://www.ceneo.pl/{product_id}#tab=reviews"
+        all_opinions = []
+        while(url):
+            response = requests.get(url)
+            page = BeautifulSoup(response.text, 'html.parser')
+            opinions = page.select("div.js_product-review")
+            for opinion in opinions:
+                single_opinion = {
+                    key:get_item(opinion, *value)
+                        for key, value in selectors.items()
+                }
+                single_opinion["opinion_id"] = opinion["data-entry-id"]
+                all_opinions.append(single_opinion)
+            try:    
+                url = "https://www.ceneo.pl"+get_item(page,"a.pagination__next","href")
+            except TypeError:
+                url = None
+                if not os.path.exists("app/opinions"):
+                    os.makedirs("app/opinions")
+            with open(f"app/opinions/{product_id}.json", "w", encoding="UTF-8") as jf:
+                json.dump(all_opinions, jf, indent=4, ensure_ascii=False)
         return redirect(url_for("product", product_id=product_id))
+    else:
+        return render_template('extract.html')
 
 @app.route('/products')
 def products():
