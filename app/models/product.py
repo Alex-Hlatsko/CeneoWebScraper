@@ -1,59 +1,63 @@
-from flask.globals import request
 import requests
+import os
 import json
+import pandas as pd 
 from bs4 import BeautifulSoup
-from app.utils import extractComponent
+from app.utils import get_item
 from app.models.opinion import Opinion
 
 class Product:
-    def __init__(self, productId, productName=None, opinions=[]) -> None:
-        self.productId = productId
-        self.productName = productName
-        self.opinions = opinions.copy()
+    def __init__(self, product_id=0, opinions=[], product_name="", opinions_count=0, pros_count=0, cons_count=0, average_score=0):
+        self.product_id = product_id
+        self.product_name = product_name
+        self.opinions = opinions
+        self.opinions_count = opinions_count
+        self.pros_count = pros_count
+        self.cons_count = cons_count
+        self.average_score = average_score
+        return self
+    
+    def __str__(self):
+        pass
 
-    def extractName(self):
-        respons = requests.get(
-            "https://www.ceneo.pl/{}#tab=reviews".format(self.productId))
-        if respons.status_code == requests.codes.ok:
-            pageDOM = BeautifulSoup(respons.text, 'html.parser')
-            self.productName = extractComponent(pageDOM, '.js_product-h1-link')
+    def __repr__(self):
+        pass
 
-    def extractProduct(self):
-        respons = requests.get("https://www.ceneo.pl/{}#tab=reviews".format(self.productId))
-        page = 2
-        while respons:
-            pageDOM = BeautifulSoup(respons.text, 'html.parser')
-            opinions = pageDOM.select("div.js_product-review")
+    def to_dict(self):
+        pass
+
+    def extract_product(self):
+        url = f"https://www.ceneo.pl/{self.product_id}#tab=reviews"
+        response = requests.get(url)
+        page = BeautifulSoup(response.text, 'html.parser')
+        self.product_name = get_item(page, "h1.product-top__product-info__name")
+        while(url):
+            response = requests.get(url)
+            page = BeautifulSoup(response.text, 'html.parser')
+            opinions = page.select("div.js_product-review")
             for opinion in opinions:
-                self.opinions.append(Opinion().extractOpinion(opinion).transformOpinion())
-            respons = requests.get(
-                "https://www.ceneo.pl/{}/opinie-".format(self.productId)+str(page), allow_redirects=False)
-            if respons.status_code == 200:
-                page += 1
-            else:
-                break
-
-    def exportProduct(self):
-        with open(f"app/products/{self.productId}.json", "w", encoding="UTF-8") as f:
-            json.dump(self.toDict(), f, indent=4, ensure_ascii=False)
-
-    def importProduct(self):
-        with open(f"app/products/{self.productId}.json", "r", encoding="UTF-8") as f:
-            product = json.load(f)
-            self.productName = product['productName']
-            opinions = product['opinions']
-            for opinion in opinions:
-                self.opinions.append(Opinion(**opinion))
-
-    def toDict(self):
-        return {
-            "productId": self.productId,
-            "productName": self.productName,
-            "opinions": [opinion.toDict() for opinion in self.opinions]
-        }
-
-    def __str__(self) -> str:
-        return f"productId: {self.productId}<br>productName: {self.productName}<br>opinions<br><br>" + "<br><br>".join(str(opinion) for opinion in self.opinions)
-
-    def __repr__(self) -> str:
-        return f"Product(productId={self.productId}, productName={self.productName}, opinions=[" + ", ".join(opinion.__repr__() for opinion in self.opinions) + "])"
+                self.opinions.append(Opinion().extract_opinion(opinion))
+            try:    
+                url = "https://www.ceneo.pl"+get_item(page,"a.pagination__next","href")
+            except TypeError:
+                url = None
+    
+    def process_stats(self):
+        opinions = pd.read_json(json.dumps(self.opinions)) 
+        self.opinions_count = len(self.opinions.index),
+        self.pros_count = self.opinions.pros.map(bool).sum()
+        self.cons_count = self.opinions.cons.map(bool).sum()
+        self.average_score = self.opinions.stars.mean().round(2)
+        return self
+    
+    def save_opinions(self):        
+        if not os.path.exists("app/opinions"):
+            os.makedirs("app/opinions")
+        with open(f"app/opinions/{self.product_id}.json", "w", encoding="UTF-8") as jf:
+            json.dump(self.opinions, jf, indent=4, ensure_ascii=False)
+    
+    def save_stats(self):        
+        if not os.path.exists("app/products"):
+            os.makedirs("app/products")
+        with open(f"app/products/{self.product_id}.json", "w", encoding="UTF-8") as jf:
+            json.dump(self.opinions, jf, indent=4, ensure_ascii=False)
