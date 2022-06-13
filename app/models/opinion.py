@@ -17,13 +17,13 @@ class Opinion:
         return self
     
     def __str__(self):
-        pass
+        return f"opinion_id: {self.opinion_id}<br>" + "<br>".join(f"{key}: {str(getattr(self, key))}" for key in self.components.keys())
 
     def __repr__(self):
-        pass
+        return f"Opinion(opinion_id={self.opinion_id}, " + ", ".join(f"{key}={str(getattr(self, key))}" for key in self.components.keys()) + ")"
 
     def to_dict(self):
-        pass
+        return {"opinion_id": self.opinion_id} | {key: getattr(self, key) for key in self.components.keys()}
 
     def extract_opinion(self, opinion):
         for key, value in selectors.items():

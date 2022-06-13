@@ -18,13 +18,17 @@ class Product:
         return self
     
     def __str__(self):
-        pass
+        return f"productId: {self.productId}<br>productName: {self.productName}<br>opinions<br><br>" + "<br><br>".join(str(opinion) for opinion in self.opinions)
 
     def __repr__(self):
-        pass
+        return f"Product(productId={self.productId}, productName={self.productName}, opinions=[" + ", ".join(opinion.__repr__() for opinion in self.opinions) + "])"
 
     def to_dict(self):
-        pass
+        return {
+            "product_id": self.productId,
+            "product_name": self.productName,
+            "opinions": [opinion.to_dict() for opinion in self.opinions]
+        }
 
     def extract_product(self):
         url = f"https://www.ceneo.pl/{self.product_id}#tab=reviews"

@@ -11,7 +11,7 @@ from app.models.product import Product
 
 @app.route('/')
 def index():
-    return render_template("index.html.jinja")
+    return render_template("index.html")
 
 @app.route('/extract', methods=["POST", "GET"])
 def extract():
@@ -23,16 +23,16 @@ def extract():
         
         return redirect(url_for("product", product_id=product_id))
     else:
-        return render_template("extract.html.jinja")
+        return render_template("extract.html")
 
 @app.route('/products')
 def products():
     products = [filename.split(".")[0] for filename in os.listdir("app/opinions")]
-    return render_template("products.html.jinja", products=products)
+    return render_template("products.html", products=products)
 
 @app.route('/author')
 def author():
-    return render_template("author.html.jinja")
+    return render_template("author.html")
 
 @app.route('/product/<product_id>')
 def product(product_id):
@@ -59,4 +59,4 @@ def product(product_id):
     plt.xticks(rotation=0)
     plt.savefig(f"app/static/plots/{product_id}_stars.png")
     plt.close()
-    return render_template("product.html.jinja", stats=stats, product_id=product_id, opinions=opinions)
+    return render_template("product.html", stats=stats, product_id=product_id, opinions=opinions)
