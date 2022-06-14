@@ -131,4 +131,5 @@ dmypy.json
 #IDE
 .vscode
 app/opinions/*.*
+app/products/*.*
 app/static/plots/*.*
